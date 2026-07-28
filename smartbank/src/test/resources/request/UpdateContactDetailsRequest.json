@@ -1,0 +1,17 @@
+{
+	"email": "priyag75@gmail.com",
+	"phoneNumber": "9876543210",
+	"occupationType": "SALARIED",
+	"address": {
+		"doorNumber": "no 10",
+		"street": "sundarar steer",
+		"area": "thamarai nagar",
+		"city": "Tambaram",
+		"district": "chennai",
+		"state": "tamilnadu",
+		"country": "India",
+		"postalCode": "600001",
+		"landmark": "near indian oil petrol bun",
+		"sreet": "string"
+	}
+}

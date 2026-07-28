@@ -1,0 +1,31 @@
+{
+	"customerId": 1001,
+	"firstName": "Priya",
+	"lastName": "G",
+	"gender": "FEMALE",
+	"email": "priyag75@gmail.com",
+	"phoneNumber": "9876543210",
+	"dateOfBirth": "2026-07-20",
+	"fatherName": "Gnanam",
+	"maritalStatus": "MARRIED",
+	"spouseName": "Mali",
+	"aadharNumber": "789456123025",
+	"panNumber": "BZCPP8969M",
+	"occupationType": "SALARIED",
+	"nationality": "Indian",
+	"address": {
+		"doorNumber": "no 10",
+		"street": "sundarar steer",
+		"area": "thamarai nagar",
+		"city": "Tambaram",
+		"district": "chennai",
+		"state": "tamilnadu",
+		"country": "India",
+		"postalCode": "600001",
+		"landmark": "near indian oil petrol bun",
+		"sreet": "string"
+	},
+	"createdDate": "2026-07-20",
+	"lastModifiedDate": "2026-07-20T11:28:49.008Z",
+	"customerStatus": "ACTIVE"
+}
