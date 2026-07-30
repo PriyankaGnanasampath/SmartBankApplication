@@ -1,5 +1,5 @@
 package com.smartbank.account.model;
 
 public enum AccountStatus {
-	OPEN, CLOSED, FREEZE
+	ACTIVE, CLOSED, FROZEN
 }

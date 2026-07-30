@@ -3,19 +3,33 @@ package com.smartbank.account.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
 import com.smartbank.account.model.AccountType;
+import com.smartbank.account.model.Branch;
 
 public class OpenAccountRequest {
-	private List<Long> customerids;
+	@NotEmpty(message = "Customer Id should not be Null or Empty")
+	private List<Long> customerIds;
+	@NotNull(message = "accountType should not be Null or Empty")
 	private AccountType accountType;
+	@NotNull(message = "Opening Balance should not be Null or Empty")
+	@Positive(message = "Opening Balance should be greater than Zero")
 	private BigDecimal openingBalance;
+	@NotNull(message = "BranchName should not be Null or Empty")
+	private Branch branchName;
 
-	public List<Long> getCustomerids() {
-		return customerids;
+		public List<Long> getCustomerIds() {
+		return customerIds;
 	}
 
-	public void setCustomerids(List<Long> customerids) {
-		this.customerids = customerids;
+	public void setCustomerIds(List<Long> customerIds) {
+		this.customerIds = customerIds;
 	}
 
 	public AccountType getAccountType() {
@@ -34,13 +48,21 @@ public class OpenAccountRequest {
 		this.openingBalance = openingBalance;
 	}
 
-	@Override
-	public String toString() {
-		return "OpenAccountRequest [customerids=" + customerids + ", accountType=" + accountType + ", openingBalance="
-				+ openingBalance + "]";
+	public Branch getBranchName() {
+		return branchName;
 	}
 
-	public OpenAccountRequest() {
+	public void setBranchName(Branch branchName) {
+		this.branchName = branchName;
+	}
+
+		@Override
+	public String toString() {
+		return "OpenAccountRequest [customerIds=" + customerIds + ", accountType=" + accountType + ", openingBalance="
+				+ openingBalance + ", branchName=" + branchName + "]";
+	}
+
+		public OpenAccountRequest() {
 
 	}
 }

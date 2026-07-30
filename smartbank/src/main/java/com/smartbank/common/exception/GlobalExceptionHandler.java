@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.smartbank.account.exception.AccountAlreadyActiveException;
 import com.smartbank.account.exception.AccountAlreadyClosedException;
 import com.smartbank.account.exception.AccountAlreadyExistsException;
+import com.smartbank.account.exception.AccountAlreadyFrozenException;
 import com.smartbank.account.exception.AccountNotFoundException;
 import com.smartbank.account.exception.CustomerAlreadyLinkedException;
 import com.smartbank.account.exception.InvalidAccountRequestException;
@@ -101,5 +103,16 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse("ACC_006", ex.getMessage(), LocalDateTime.now());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
-
+	
+	@ExceptionHandler(AccountAlreadyFrozenException.class)
+	public ResponseEntity<ErrorResponse> handleAccountAlreadyFrozenException(AccountAlreadyFrozenException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("ACC_007", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+	
+	@ExceptionHandler(AccountAlreadyActiveException.class)
+	public ResponseEntity<ErrorResponse> handleAccountAlreadyActiveException(AccountAlreadyActiveException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("ACC_008", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
 }

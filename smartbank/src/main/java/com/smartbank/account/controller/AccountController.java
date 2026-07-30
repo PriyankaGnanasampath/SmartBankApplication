@@ -1,6 +1,7 @@
 package com.smartbank.account.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -30,7 +31,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/accounts")
-@Tag(name = "Account", description = "Account module")
 @Tag(name = "Account Management", description = "APIs for Account registration, Account update,Account freeze and Account closure.")
 
 public class AccountController {
@@ -53,7 +53,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/account-number/{accountNumber}")
-	public ResponseEntity<Account> getAccountByAccountNumber(@PathVariable Long accountNumber) {
+	public ResponseEntity<Account> getAccountByAccountNumber(@PathVariable String accountNumber) {
 		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAccountByAccountNumber(accountNumber));
 	}
 
@@ -72,7 +72,7 @@ public class AccountController {
 		return ResponseEntity.status(HttpStatus.OK).body(accountService.freezeAccount(accountId));
 	}
 
-	@GetMapping("/{customerId}/accounts")
+	@GetMapping("/customer/{customerId}")
 	public ResponseEntity<List<Account>> getAccountsByCustomer(@PathVariable Long customerId) {
 		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAccountsByCustomer(customerId));
 	}

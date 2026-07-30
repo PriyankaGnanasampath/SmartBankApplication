@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -29,23 +30,26 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long accountId;
+	@Column(unique = true, nullable = false)
 	private String accountNumber;
-	@NotBlank(message = "accountType should not be Blank")
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
-	@NotNull(message = "Opening Balance should not be Null")
-	@Positive(message = "Opening Balance should be greater than Zero")
+	@Column(nullable = false)
 	private BigDecimal openingBalance;
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private AccountStatus accountStatus;
+	@Column(nullable = false)
+	private String ifscCode;
+	@Enumerated(EnumType.STRING)
+	private Branch branch;
 	private LocalDate openingDate;
-	private LocalDate createdDate;
+	private LocalDateTime createdDate;
 	private String createdBy;
 	private LocalDateTime lastModifiedDate;
 	private String modifiedBy;
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "ACCOUNT_CUSTOMER", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "customer_id"))
-	@NotEmpty(message = "Opening Balance should not be Empty")
 	private Set<Customer> customers;
 
 	public Long getAccountId() {
@@ -72,11 +76,11 @@ public class Account {
 		this.accountType = accountType;
 	}
 
-	public BigDecimal getBalance() {
+	public BigDecimal getOpeningBalance() {
 		return openingBalance;
 	}
 
-	public void setBalance(BigDecimal openingBalance) {
+	public void setOpeningBalance(BigDecimal openingBalance) {
 		this.openingBalance = openingBalance;
 	}
 
@@ -88,6 +92,22 @@ public class Account {
 		this.accountStatus = accountStatus;
 	}
 
+	public String getIfscCode() {
+		return ifscCode;
+	}
+
+	public void setIfscCode(String ifscCode) {
+		this.ifscCode = ifscCode;
+	}
+
+	public Branch getBranchName() {
+		return branch;
+	}
+
+	public void setBranchName(Branch branchName) {
+		this.branch = branchName;
+	}
+
 	public LocalDate getOpeningDate() {
 		return openingDate;
 	}
@@ -96,11 +116,11 @@ public class Account {
 		this.openingDate = openingDate;
 	}
 
-	public LocalDate getCreatedDate() {
+	public LocalDateTime getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(LocalDate createdDate) {
+	public void setCreatedDate(LocalDateTime createdDate) {
 		this.createdDate = createdDate;
 	}
 
@@ -139,9 +159,10 @@ public class Account {
 	@Override
 	public String toString() {
 		return "Account [accountId=" + accountId + ", accountNumber=" + accountNumber + ", accountType=" + accountType
-				+ ", openingBalance=" + openingBalance + ", accountStatus=" + accountStatus + ", openingDate="
-				+ openingDate + ", createdDate=" + createdDate + ", createdBy=" + createdBy + ", lastModifiedDate="
-				+ lastModifiedDate + ", modifiedBy=" + modifiedBy + ", customers=" + customers + "]";
+				+ ", openingBalance=" + openingBalance + ", accountStatus=" + accountStatus + ", ifscCode=" + ifscCode
+				+ ", branchName=" + branch + ", openingDate=" + openingDate + ", createdDate=" + createdDate
+				+ ", createdBy=" + createdBy + ", lastModifiedDate=" + lastModifiedDate + ", modifiedBy=" + modifiedBy
+				+ ", customers=" + customers + "]";
 	}
 
 	public Account() {
