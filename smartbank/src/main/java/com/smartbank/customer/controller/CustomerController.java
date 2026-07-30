@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.smartbank.account.model.Account;
 import com.smartbank.customer.dto.UpdateContactDetailsRequest;
 import com.smartbank.customer.model.Customer;
 import com.smartbank.customer.service.CustomerService;
@@ -115,4 +116,6 @@ public class CustomerController {
 		return ResponseEntity.ok(closeCustomer);
 
 	}
+	
+	
 }

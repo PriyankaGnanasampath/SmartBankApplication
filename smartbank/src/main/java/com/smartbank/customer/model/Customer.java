@@ -2,14 +2,20 @@ package com.smartbank.customer.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+
+import com.smartbank.account.model.Account;
 
 @Entity
 @Table(name = "CUSTOMER")
@@ -50,6 +56,41 @@ public class Customer {
 	private LocalDateTime lastModifiedDate;
 	@Enumerated(EnumType.STRING)
 	private CustomerStatus customerStatus;
+	/*
+	 * Customer customer = customerRepository.findById(1L).get(); If the
+	 * relationship is:
+	 * 
+	 * @ManyToMany(fetch = FetchType.EAGER) Hibernate will execute something
+	 * like:Fetch the customer.Immediately fetch all three accounts. Even if your
+	 * code never calls: customer.getAccounts(); This can become expensive when a
+	 * customer has many related records. If the relationship is:
+	 * 
+	 * @ManyToMany(fetch = FetchType.LAZY) Hibernate initially fetches only the
+	 * customer.Later, when your code executes: customer.getAccounts(); only then
+	 * will Hibernate fetch the accounts.This is called lazy loading.
+	 * 
+	 * The default fetch type depends on the relationship.Relationship Default Fetch Type
+	 * 
+	 * @ManyToOne EAGER
+	 * @OneToOne EAGER
+	 * @OneToMany LAZY
+	 * @ManyToMany LAZY
+	 */
+
+	@ManyToMany(mappedBy = "customers", fetch = FetchType.LAZY)
+	private Set<Account> accounts;
+
+	public Set<Account> getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(Set<Account> accounts) {
+		this.accounts = accounts;
+	}
+
+	public void setAadharNumber(String aadharNumber) {
+		this.aadharNumber = aadharNumber;
+	}
 
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
@@ -202,7 +243,8 @@ public class Customer {
 				+ dateOfBirth + ", fatherName=" + fatherName + ", maritalStatus=" + maritalStatus + ", spouseName="
 				+ spouseName + ", aadharNumber=" + aadharNumber + ", panNumber=" + panNumber + ", occupationType="
 				+ occupationType + ", nationality=" + nationality + ", address=" + address + ", createdDate="
-				+ createdDate + ", lastModifiedDate=" + lastModifiedDate + ", customerStatus=" + customerStatus + "]";
+				+ createdDate + ", lastModifiedDate=" + lastModifiedDate + ", customerStatus=" + customerStatus
+				+ ", accounts=" + accounts + "]";
 	}
 
 	public Customer() {
