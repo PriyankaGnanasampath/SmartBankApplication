@@ -23,6 +23,10 @@ import com.smartbank.customer.exception.EmailAlreadyExistsException;
 import com.smartbank.customer.exception.InvalidCustomerRequestException;
 import com.smartbank.customer.exception.PanAlreadyExistsException;
 import com.smartbank.customer.exception.PhoneNumberAlreadyExistsException;
+import com.smartbank.transaction.exception.InsufficientBalanceException;
+import com.smartbank.transaction.exception.InvalidTransactionRequestException;
+import com.smartbank.transaction.exception.TransactionFailedException;
+import com.smartbank.transaction.exception.TransactionNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -103,16 +107,42 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse("ACC_006", ex.getMessage(), LocalDateTime.now());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
-	
+
 	@ExceptionHandler(AccountAlreadyFrozenException.class)
 	public ResponseEntity<ErrorResponse> handleAccountAlreadyFrozenException(AccountAlreadyFrozenException ex) {
 		ErrorResponse errorResponse = new ErrorResponse("ACC_007", ex.getMessage(), LocalDateTime.now());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
-	
+
 	@ExceptionHandler(AccountAlreadyActiveException.class)
 	public ResponseEntity<ErrorResponse> handleAccountAlreadyActiveException(AccountAlreadyActiveException ex) {
 		ErrorResponse errorResponse = new ErrorResponse("ACC_008", ex.getMessage(), LocalDateTime.now());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
+
+	@ExceptionHandler(TransactionNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleTransactionNotFoundException(TransactionNotFoundException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("TRAN_001", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(InsufficientBalanceException.class)
+	public ResponseEntity<ErrorResponse> handleInsufficientBalanceException(InsufficientBalanceException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("TRAN_002", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(InvalidTransactionRequestException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidTransactionRequestException(
+			InvalidTransactionRequestException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("TRAN_003", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(TransactionFailedException.class)
+	public ResponseEntity<ErrorResponse> handleTransactionFailedException(TransactionFailedException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("TRAN_004", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
 }

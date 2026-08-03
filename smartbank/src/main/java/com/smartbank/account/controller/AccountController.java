@@ -21,6 +21,8 @@ import com.smartbank.account.dto.OpenAccountRequest;
 import com.smartbank.account.dto.UpdateAccountRequest;
 import com.smartbank.account.exception.InvalidAccountRequestException;
 import com.smartbank.account.model.Account;
+import com.smartbank.account.model.AccountStatus;
+import com.smartbank.account.model.AccountType;
 import com.smartbank.account.service.AccountService;
 import com.smartbank.customer.model.Customer;
 
@@ -42,7 +44,8 @@ public class AccountController {
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "Account Created successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid account request"),
 			@ApiResponse(responseCode = "409", description = "Duplicate account information") })
-	public ResponseEntity<Account> openAccount(@Valid @RequestBody OpenAccountRequest account)throws InvalidAccountRequestException {
+	public ResponseEntity<Account> openAccount(@Valid @RequestBody OpenAccountRequest account)
+			throws InvalidAccountRequestException {
 		Account openedAccount = accountService.openAccount(account);
 		return ResponseEntity.status(HttpStatus.CREATED).body(openedAccount);
 	}
@@ -57,24 +60,43 @@ public class AccountController {
 		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAccountByAccountNumber(accountNumber));
 	}
 
-	@PutMapping("{accountId}")
-	public ResponseEntity<Account> updateAccount(@PathVariable Long accountId, @RequestBody UpdateAccountRequest updateAccountRequest) {
-		return ResponseEntity.status(HttpStatus.OK).body(accountService.updateAccount(accountId,updateAccountRequest));
-	}
-
-	@PatchMapping("{accountId}/close")
-	public ResponseEntity<Account> closeAccount(@PathVariable Long accountId) {
-		return ResponseEntity.status(HttpStatus.OK).body(accountService.closeAccount(accountId));
-	}
-
-	@PatchMapping("{accountId}/freeze")
-	public ResponseEntity<Account> freezeAccount(@PathVariable Long accountId) {
-		return ResponseEntity.status(HttpStatus.OK).body(accountService.freezeAccount(accountId));
-	}
-
 	@GetMapping("/customer/{customerId}")
 	public ResponseEntity<List<Account>> getAccountsByCustomer(@PathVariable Long customerId) {
 		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAccountsByCustomer(customerId));
+	}
+
+	@GetMapping("/account-type/{accountType}")
+	public ResponseEntity<List<Account>> getAccountsByAccountType(@PathVariable AccountType accountType) {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAccountsByAccountType(accountType));
+	}
+
+	@GetMapping("/account-status/{accountStatus}")
+	public ResponseEntity<List<Account>> getAccountsByAccountStatus(@PathVariable AccountStatus accountStatus) {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAccountsByAccountStatus(accountStatus));
+	}
+	@GetMapping
+	public ResponseEntity<List<Account>> getAllAccounts() {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.getAllAccounts());
+	}
+
+	@PutMapping("{accountId}")
+	public ResponseEntity<Account> updateAccount(@PathVariable Long accountId,
+			@RequestBody UpdateAccountRequest updateAccountRequest) {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.updateAccount(accountId, updateAccountRequest));
+	}
+
+	@PatchMapping("{accountNumber}/close")
+	public ResponseEntity<Account> closeAccount(@PathVariable String accountNumber) {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.closeAccount(accountNumber));
+	}
+
+	@PatchMapping("{accountNumber}/freeze")
+	public ResponseEntity<Account> freezeAccount(@PathVariable String accountNumber) {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.freezeAccount(accountNumber));
+	}
+	@PatchMapping("{accountNumber}/activate")
+	public ResponseEntity<Account> activateAccount(@PathVariable String accountNumber) {
+		return ResponseEntity.status(HttpStatus.OK).body(accountService.activateAccount(accountNumber));
 	}
 
 }

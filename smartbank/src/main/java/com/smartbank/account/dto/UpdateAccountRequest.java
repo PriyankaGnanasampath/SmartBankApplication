@@ -1,8 +1,11 @@
 package com.smartbank.account.dto;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.smartbank.account.model.Branch;
 
 public class UpdateAccountRequest {
+	@NotEmpty(message = "BranchName should not be Null or Empty")
 	private Branch branch;
 	private String ifscCode;
 	private String Nominee;

@@ -117,6 +117,7 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 		existingCustomer.setCustomerStatus(CustomerStatus.CLOSED);
 		existingCustomer.setLastModifiedDate(LocalDateTime.now());
+		customerRepository.save(existingCustomer);
 		LOGGER.info("Close Customer successfully completed.CustomerId={}", customerId);
 		return customerRepository.save(existingCustomer);
 	}

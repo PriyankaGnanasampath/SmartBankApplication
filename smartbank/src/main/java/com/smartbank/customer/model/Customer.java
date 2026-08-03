@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.smartbank.account.model.Account;
 
 @Entity
@@ -69,26 +70,37 @@ public class Customer {
 	 * customer.Later, when your code executes: customer.getAccounts(); only then
 	 * will Hibernate fetch the accounts.This is called lazy loading.
 	 * 
-	 * The default fetch type depends on the relationship.Relationship Default Fetch Type
+	 * The default fetch type depends on the relationship.Relationship Default Fetch
+	 * Type
 	 * 
 	 * @ManyToOne EAGER
+	 * 
 	 * @OneToOne EAGER
+	 * 
 	 * @OneToMany LAZY
+	 * 
 	 * @ManyToMany LAZY
 	 */
 
-	@ManyToMany(mappedBy = "customers", fetch = FetchType.LAZY)
-	private Set<Account> accounts;
-
-	public Set<Account> getAccounts() {
-		return accounts;
-	}
-
-	public void setAccounts(Set<Account> accounts) {
-		this.accounts = accounts;
-	}
-
-	public void setAadharNumber(String aadharNumber) {
+	/*
+	 * @ManyToMany(mappedBy = "customers", fetch = FetchType.LAZY)
+	 * 
+	 * @JsonManagedReference private Set<Account> accounts;
+	 * 
+	 * public Set<Account> getAccounts() { return accounts; }
+	 * 
+	 * public void setAccounts(Set<Account> accounts) { this.accounts = accounts; }
+	 * 
+	 * ✅ No @JsonManagedReference ✅ No @JsonBackReference ✅ No infinite recursion ✅
+	 * No 415 errors ✅ Simpler APIs ✅ Hibernate still creates and maintains the
+	 * ACCOUNT_CUSTOMER bridge table.
+	 * 
+	 * This is the design I would recommend for your current SmartBank project. It
+	 * keeps the code simpler while still allowing the bridge table to work exactly
+	 * as intended. As your project grows and you genuinely need to fetch a
+	 * customer's accounts directly, you can introduce the reverse relationship or
+	 * use a query/DTO instead of exposing the entity relationship.
+	 */ public void setAadharNumber(String aadharNumber) {
 		this.aadharNumber = aadharNumber;
 	}
 
@@ -243,8 +255,7 @@ public class Customer {
 				+ dateOfBirth + ", fatherName=" + fatherName + ", maritalStatus=" + maritalStatus + ", spouseName="
 				+ spouseName + ", aadharNumber=" + aadharNumber + ", panNumber=" + panNumber + ", occupationType="
 				+ occupationType + ", nationality=" + nationality + ", address=" + address + ", createdDate="
-				+ createdDate + ", lastModifiedDate=" + lastModifiedDate + ", customerStatus=" + customerStatus
-				+ ", accounts=" + accounts + "]";
+				+ createdDate + ", lastModifiedDate=" + lastModifiedDate + ", customerStatus=" + customerStatus + "]";
 	}
 
 	public Customer() {

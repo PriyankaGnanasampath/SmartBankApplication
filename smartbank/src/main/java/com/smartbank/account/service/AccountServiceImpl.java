@@ -4,13 +4,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.smartbank.account.common.AccountConstants;
@@ -18,6 +16,7 @@ import com.smartbank.account.dto.OpenAccountRequest;
 import com.smartbank.account.dto.UpdateAccountRequest;
 import com.smartbank.account.exception.AccountAlreadyActiveException;
 import com.smartbank.account.exception.AccountAlreadyClosedException;
+import com.smartbank.account.exception.AccountAlreadyFrozenException;
 import com.smartbank.account.exception.AccountNotFoundException;
 import com.smartbank.account.exception.InvalidAccountRequestException;
 import com.smartbank.account.exception.MinimumBalanceException;
@@ -26,6 +25,7 @@ import com.smartbank.account.model.Account;
 import com.smartbank.account.model.AccountStatus;
 import com.smartbank.account.model.AccountType;
 import com.smartbank.account.repository.AccountRepository;
+import com.smartbank.common.service.SequenceGeneratorService;
 import com.smartbank.customer.exception.CustomerAlreadyClosedException;
 import com.smartbank.customer.exception.CustomerNotFoundException;
 import com.smartbank.customer.model.Customer;
@@ -38,21 +38,24 @@ public class AccountServiceImpl implements AccountService {
 	private final AccountRepository accountRepository;
 	private final CustomerRepository customerRepository;
 	private final AccountHelper accountHelper;
+	private final SequenceGeneratorService sequenceGeneratorService;
 
 	public AccountServiceImpl(AccountRepository accountRepository, CustomerRepository customerRepository,
-			AccountHelper accountHelper) {
+			AccountHelper accountHelper, SequenceGeneratorService sequenceGeneratorService) {
 		this.accountRepository = accountRepository;
 		this.customerRepository = customerRepository;
 		this.accountHelper = accountHelper;
+		this.sequenceGeneratorService = sequenceGeneratorService;
 	}
 
-	private static long accountSequence = 10000;
 	private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
 
 	@Override
 
 	public Account openAccount(OpenAccountRequest openAccountRequest) {
-		logger.info("Account creation started");
+		logger.info("Opening account. CustomerIds={}, Type={}",
+				openAccountRequest.getCustomerIds(),
+				openAccountRequest.getAccountType());
 		Account account = new Account();
 		List<Customer> customer = getCustomerDetails(openAccountRequest);
 		validateCustomers(customer, openAccountRequest);
@@ -60,7 +63,7 @@ public class AccountServiceImpl implements AccountService {
 		validateDuplicateCustomers(openAccountRequest);
 		validateAccountInformation(openAccountRequest, customer);
 		String accountNumber = generateAccountNumber(openAccountRequest);
-		populateAccount(account, openAccountRequest, accountNumber, customer);
+		buildAccount(account, openAccountRequest, accountNumber, customer);
 		Account savedAccount = accountRepository.save(account);
 		logger.info("Account has been successfully created. Account={}", account);
 		return savedAccount;
@@ -111,27 +114,27 @@ public class AccountServiceImpl implements AccountService {
 		switch (openAccountRequest.getAccountType()) {
 		case SAVINGS: {
 			validateSavingsAccount(openAccountRequest);
-			return;
+			break;
 		}
 		case CURRENT: {
 			validateCurrentAccount(openAccountRequest);
-			return;
+			break;
 		}
 		case JOINT: {
 			validateJointAccount(openAccountRequest);
-			return;
+			break;
 		}
 		case LOAN: {
 			validateLoanAccount(openAccountRequest);
-			return;
+			break;
 		}
 		case NRI: {
 			validateNriAccount(openAccountRequest, customer);
-			return;
+			break;
 		}
 		case STUDENT: {
 			validateStudentAccount(openAccountRequest, customer);
-			return;
+			break;
 		}
 		default: {
 			throw new InvalidAccountRequestException("Invalid AccountType" + openAccountRequest.getAccountType());
@@ -254,62 +257,19 @@ public class AccountServiceImpl implements AccountService {
 
 		// TODO Auto-generated method stub
 		logger.info("Entering the Generate Account Number");
-
-		String accountNumber = "";
-		accountSequence++;
-		switch (openAccountRequest.getAccountType()) {
-		case SAVINGS: {
-			accountNumber = AccountConstants.SAVINGS_ACCOUNT_PREFIX + accountSequence;
-			logger.info(" AccountNumber has been successfully generated for Savings Account. AccountNumber={}",
-					accountNumber);
-
-			return accountNumber;
-		}
-		case CURRENT: {
-			accountNumber = AccountConstants.CURRENT_ACCOUNT_PREFIX + accountSequence;
-			logger.info(" AccountNumber has been successfully generated for Current Account. AccountNumber={}",
-					accountNumber);
-
-			return accountNumber;
-		}
-		case JOINT: {
-			accountNumber = AccountConstants.JOINT_ACCOUNT_PREFIX + accountSequence;
-			logger.info(" AccountNumber has been successfully generated for Joint Account. AccountNumber={}",
-					accountNumber);
-
-			return accountNumber;
-		}
-		case LOAN: {
-			accountNumber = AccountConstants.LOAN_ACCOUNT_PREFIX + accountSequence;
-			logger.info(" AccountNumber has been successfully generated for Loan Account. AccountNumber={}",
-					accountNumber);
-
-			return accountNumber;
-		}
-		case NRI: {
-			accountNumber = AccountConstants.NRI_ACCOUNT_PREFIX + accountSequence;
-			logger.info(" AccountNumber has been successfully generated for NRI Account. AccountNumber={}",
-					accountNumber);
-
-			return accountNumber;
-		}
-		case STUDENT: {
-			accountNumber = AccountConstants.STUDENT_ACCOUNT_PREFIX + accountSequence;
-			return accountNumber;
-		}
-		default:
-		}
-		return "";
+		String accountNumber = sequenceGeneratorService.generateSequenceNumber(openAccountRequest.getAccountType().toString());
+		return accountNumber;
 
 	}
 
-	private void populateAccount(Account account, OpenAccountRequest openAccountRequest, String accountNumber,
+	private void buildAccount(Account account, OpenAccountRequest openAccountRequest, String accountNumber,
 			List<Customer> customer) {
 		// TODO Auto-generated method stub
 		logger.info("Populate the Account Details");
 
 		Set<Customer> cust = new HashSet<>(customer);
 		account.setAccountNumber(accountNumber);
+		account.setAccountType(openAccountRequest.getAccountType());
 		account.setAccountStatus(AccountStatus.ACTIVE);
 		account.setBranchName(openAccountRequest.getBranchName());
 		account.setCreatedBy(AccountConstants.MODIFIED_USER_NAME);
@@ -346,18 +306,30 @@ public class AccountServiceImpl implements AccountService {
 
 		Account existingAccount = accountRepository.findById(accountId).orElseThrow(
 				() -> new AccountNotFoundException("Account is not present in the database. AccountId=" + accountId));
-		existingAccount.setBranchName(updateAccountRequest.getBranch());
-		existingAccount.setIfscCode(updateAccountRequest.getBranch().getIfscCode());
-		existingAccount.setLastModifiedDate(LocalDateTime.now());
-		existingAccount.setModifiedBy(AccountConstants.MODIFIED_USER_NAME);
+		switch (existingAccount.getAccountStatus()) {
+		case ACTIVE:
+			existingAccount.setBranchName(updateAccountRequest.getBranch());
+			existingAccount.setIfscCode(updateAccountRequest.getBranch().getIfscCode());
+			existingAccount.setLastModifiedDate(LocalDateTime.now());
+			existingAccount.setModifiedBy(AccountConstants.MODIFIED_USER_NAME);
+			break;
+		case CLOSED:
+			throw new AccountAlreadyClosedException("Account is already closed. AccountNumber:" + existingAccount.getAccountNumber());
+		case FROZEN:
+			throw new AccountAlreadyClosedException("Account is already Frozen. AccountNumber:" + existingAccount.getAccountNumber());
+		default:
+			break;
+		}
+		
 		return existingAccount;
 	}
-
+	
 	@Override
-	public Account freezeAccount(Long accountId) {
+	public Account freezeAccount(String accountNumber) {
 		// TODO Auto-generated method stub
-		Account existingAccount = accountRepository.findById(accountId).orElseThrow(
-				() -> new AccountNotFoundException("Account is not present in the database. AccountId=" + accountId));
+		Account existingAccount = accountRepository.findAccountByAccountNumber(accountNumber)
+				.orElseThrow(() -> new AccountNotFoundException(
+						"Account is not present in the database. AccountNumber=" + accountNumber));
 		switch (existingAccount.getAccountStatus()) {
 		case ACTIVE:
 			existingAccount.setAccountStatus(AccountStatus.FROZEN);
@@ -365,9 +337,9 @@ public class AccountServiceImpl implements AccountService {
 			existingAccount.setLastModifiedDate(LocalDateTime.now());
 			break;
 		case CLOSED:
-			throw new AccountAlreadyClosedException("Account is already closed. AccountId:" + accountId);
+			throw new AccountAlreadyClosedException("Account is already closed. AccountNumber:" + accountNumber);
 		case FROZEN:
-			throw new AccountAlreadyClosedException("Account is already Frozen. AccountId:" + accountId);
+			throw new AccountAlreadyFrozenException("Account is already Frozen. AccountNumber:" + accountNumber);
 		default:
 			break;
 		}
@@ -376,19 +348,19 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public Account activateAccount(Long accountId) {
-		Account existingAccount = accountRepository.findById(accountId).orElseThrow(
-				() -> new AccountNotFoundException("Account is not present in the database. AccountId=" + accountId));
+	public Account activateAccount(String accountNumber) {
+		Account existingAccount = accountRepository.findAccountByAccountNumber(accountNumber)
+				.orElseThrow(() -> new AccountNotFoundException(
+						"Account is not present in the database. AccountNumber=" + accountNumber));
 		switch (existingAccount.getAccountStatus()) {
 		case ACTIVE:
-			throw new AccountAlreadyActiveException("Account is already closed. AccountId:" + accountId);
+			throw new AccountAlreadyActiveException("Account is already active. AccountNumber:" + accountNumber);
 		case CLOSED:
-			throw new AccountAlreadyClosedException("Account is already closed. AccountId:" + accountId);
+			throw new AccountAlreadyClosedException("Account is already closed. AccountNumber:" + accountNumber);
 		case FROZEN:
 			existingAccount.setAccountStatus(AccountStatus.ACTIVE);
 			existingAccount.setModifiedBy(AccountConstants.MODIFIED_USER_NAME);
 			existingAccount.setLastModifiedDate(LocalDateTime.now());
-
 		default:
 			break;
 		}
@@ -396,12 +368,13 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public Account closeAccount(Long accountId) {
+	public Account closeAccount(String accountNumber) {
 		// TODO Auto-generated method stub
-		Account existingAccount = accountRepository.findById(accountId).orElseThrow(
-				() -> new AccountNotFoundException("Account is not present in the database. AccountId=" + accountId));
+		Account existingAccount = accountRepository.findAccountByAccountNumber(accountNumber)
+				.orElseThrow(() -> new AccountNotFoundException(
+						"Account is not present in the database. AccountNumber=" + accountNumber));
 		if (existingAccount.getAccountStatus().equals(AccountStatus.CLOSED)) {
-			throw new AccountAlreadyClosedException("Account is already closed. AccountId:" + accountId);
+			throw new AccountAlreadyClosedException("Account is already closed. AccountNumber:" + accountNumber);
 		}
 		if (existingAccount.getAccountStatus().equals(AccountStatus.ACTIVE)
 				|| existingAccount.getAccountStatus().equals(AccountStatus.FROZEN)) {
@@ -445,6 +418,12 @@ public class AccountServiceImpl implements AccountService {
 		// TODO Auto-generated method stub
 		return accountRepository.findByAccountStatus(accountStatus).orElseThrow(() -> new AccountNotFoundException(
 				"Account is not present in the database. AccountStatus=" + accountStatus));
+	}
+
+	@Override
+	public List<Account> getAllAccounts() {
+		// TODO Auto-generated method stub
+		return accountRepository.findAll();
 	}
 
 }

@@ -22,6 +22,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.smartbank.customer.model.Customer;
 
 @Entity
@@ -50,6 +51,8 @@ public class Account {
 	private String modifiedBy;
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "ACCOUNT_CUSTOMER", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "customer_id"))
+	@JsonBackReference
+	
 	private Set<Customer> customers;
 
 	public Long getAccountId() {
@@ -156,13 +159,15 @@ public class Account {
 		this.customers = customers;
 	}
 
+	
+
 	@Override
 	public String toString() {
 		return "Account [accountId=" + accountId + ", accountNumber=" + accountNumber + ", accountType=" + accountType
 				+ ", openingBalance=" + openingBalance + ", accountStatus=" + accountStatus + ", ifscCode=" + ifscCode
-				+ ", branchName=" + branch + ", openingDate=" + openingDate + ", createdDate=" + createdDate
+				+ ", branch=" + branch + ", openingDate=" + openingDate + ", createdDate=" + createdDate
 				+ ", createdBy=" + createdBy + ", lastModifiedDate=" + lastModifiedDate + ", modifiedBy=" + modifiedBy
-				+ ", customers=" + customers + "]";
+				+ "]";
 	}
 
 	public Account() {
