@@ -23,6 +23,15 @@ import com.smartbank.customer.exception.EmailAlreadyExistsException;
 import com.smartbank.customer.exception.InvalidCustomerRequestException;
 import com.smartbank.customer.exception.PanAlreadyExistsException;
 import com.smartbank.customer.exception.PhoneNumberAlreadyExistsException;
+import com.smartbank.loan.exception.EMIPaymentException;
+import com.smartbank.loan.exception.InvalidLoanRequestException;
+import com.smartbank.loan.exception.LoanAlreadyActiveException;
+import com.smartbank.loan.exception.LoanAlreadyApprovedException;
+import com.smartbank.loan.exception.LoanAlreadyClosedException;
+import com.smartbank.loan.exception.LoanAlreadyDisbursedException;
+import com.smartbank.loan.exception.LoanAlreadyRejectedException;
+import com.smartbank.loan.exception.LoanNotApprovedException;
+import com.smartbank.loan.exception.LoanNotFoundException;
 import com.smartbank.transaction.exception.InsufficientBalanceException;
 import com.smartbank.transaction.exception.InvalidTransactionRequestException;
 import com.smartbank.transaction.exception.TransactionFailedException;
@@ -142,6 +151,60 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(TransactionFailedException.class)
 	public ResponseEntity<ErrorResponse> handleTransactionFailedException(TransactionFailedException ex) {
 		ErrorResponse errorResponse = new ErrorResponse("TRAN_004", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleLoanNotFoundException(LoanNotFoundException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_001", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(InvalidLoanRequestException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidLoanRequestException(InvalidLoanRequestException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_002", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanAlreadyClosedException.class)
+	public ResponseEntity<ErrorResponse> handleLoanAlreadyClosedException(LoanAlreadyClosedException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_003", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanNotApprovedException.class)
+	public ResponseEntity<ErrorResponse> handleLoanNotApprovedException(LoanNotApprovedException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_004", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanAlreadyDisbursedException.class)
+	public ResponseEntity<ErrorResponse> handleLoanAlreadyDisbursedException(LoanAlreadyDisbursedException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_005", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(EMIPaymentException.class)
+	public ResponseEntity<ErrorResponse> handleEMIPaymentException(EMIPaymentException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_006", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanAlreadyApprovedException.class)
+	public ResponseEntity<ErrorResponse> handleLoanAlreadyApprovedException(LoanAlreadyApprovedException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_007", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanAlreadyActiveException.class)
+	public ResponseEntity<ErrorResponse> handleLoanAlreadyActiveException(LoanAlreadyActiveException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_008", ex.getMessage(), LocalDateTime.now());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+	}
+
+	@ExceptionHandler(LoanAlreadyRejectedException.class)
+	public ResponseEntity<ErrorResponse> handleLoanAlreadyRejectedException(LoanAlreadyRejectedException ex) {
+		ErrorResponse errorResponse = new ErrorResponse("LOAN_009", ex.getMessage(), LocalDateTime.now());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
 

@@ -44,7 +44,22 @@ public class SequenceGeneratorService {
 		case SequenceContants.TRANSACTION_REFERENCE_SEQUENCE:
 			sequence = sequenceRepository.getNextSequence("trans_ref_seq");
 			return "TRAN" + sequence+LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmssSSS"));
-
+		case SequenceContants.EDUCATION_LOAN_SEQ:
+			sequence = sequenceRepository.getNextSequence("education_loan_seq");
+			return "ELN" + sequence;
+		case SequenceContants.GOLD_LOAN_SEQ:
+			sequence = sequenceRepository.getNextSequence("gold_loan_seq");
+			return "GLN" + sequence;
+		case SequenceContants.HOME_LOAN_SEQ:
+			sequence = sequenceRepository.getNextSequence("home_loan_seq");
+			return "HLN" + sequence;
+		case SequenceContants.VEHICLE_LOAN_SEQ:
+			sequence = sequenceRepository.getNextSequence("vehicle_loan_seq");
+			return "VLN" + sequence;
+		case SequenceContants.PERSONAL_LOAN_SEQ:
+			sequence = sequenceRepository.getNextSequence("personal_loan_seq");
+			return "PLN" + sequence;	
+			
 		default:
 			throw new IllegalArgumentException("Invalid Account Type");
 		}
