@@ -23,7 +23,7 @@ import com.smartbank.customer.exception.EmailAlreadyExistsException;
 import com.smartbank.customer.exception.InvalidCustomerRequestException;
 import com.smartbank.customer.exception.PanAlreadyExistsException;
 import com.smartbank.customer.exception.PhoneNumberAlreadyExistsException;
-import com.smartbank.loan.exception.EMIPaymentException;
+import com.smartbank.loan.exception.EMIRepaymentException;
 import com.smartbank.loan.exception.InvalidLoanRequestException;
 import com.smartbank.loan.exception.LoanAlreadyActiveException;
 import com.smartbank.loan.exception.LoanAlreadyApprovedException;
@@ -184,8 +184,8 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
 
-	@ExceptionHandler(EMIPaymentException.class)
-	public ResponseEntity<ErrorResponse> handleEMIPaymentException(EMIPaymentException ex) {
+	@ExceptionHandler(EMIRepaymentException.class)
+	public ResponseEntity<ErrorResponse> handleEMIPaymentException(EMIRepaymentException ex) {
 		ErrorResponse errorResponse = new ErrorResponse("LOAN_006", ex.getMessage(), LocalDateTime.now());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}

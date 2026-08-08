@@ -4,26 +4,31 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
 import com.smartbank.customer.model.Customer;
 import com.smartbank.loan.common.LoanConstants;
-import com.smartbank.loan.dto.ApplyLoanRequest;
-import com.smartbank.loan.dto.ApplyLoanResponse;
-import com.smartbank.loan.dto.ApproveLoanRequest;
-import com.smartbank.loan.dto.ApproveLoanResponse;
-import com.smartbank.loan.dto.DisburseLoanRequest;
-import com.smartbank.loan.dto.LoanPaymentRequest;
+import com.smartbank.loan.dto.ApplyLoanRequestDto;
+import com.smartbank.loan.dto.ApplyLoanResponseDto;
+import com.smartbank.loan.dto.ApproveLoanRequestDto;
+import com.smartbank.loan.dto.ApproveLoanResponseDto;
+import com.smartbank.loan.dto.DisburseLoanRequestDto;
+import com.smartbank.loan.dto.LoanRepaymentRequestDto;
+import com.smartbank.loan.dto.RejectLoanRequestDto;
 import com.smartbank.loan.exception.InvalidLoanRequestException;
-import com.smartbank.loan.exception.LoanNotFoundException;
 import com.smartbank.loan.helper.ApplyLoanHelper;
 import com.smartbank.loan.helper.ApproveLoanHelper;
 import com.smartbank.loan.helper.DisburseLoanHelper;
 import com.smartbank.loan.helper.LoanHelper;
+import com.smartbank.loan.helper.LoanInstallmentHelper;
+import com.smartbank.loan.helper.LoanRepaymentHelper;
 import com.smartbank.loan.model.Loan;
+import com.smartbank.loan.model.LoanInstallment;
 import com.smartbank.loan.model.LoanStatus;
+import com.smartbank.loan.model.PaymentStatus;
 import com.smartbank.loan.repository.LoanInstallmentRepository;
 import com.smartbank.loan.repository.LoanRepository;
 
@@ -35,37 +40,42 @@ public class LoanServiceImpl implements LoanService {
 	private final ApplyLoanHelper applyLoanHelper;
 	private final ApproveLoanHelper approveLoanHelper;
 	private final DisburseLoanHelper disburseLoanHelper;
+	private final LoanRepaymentHelper loanRepaymentHelper;
+	private final LoanInstallmentHelper loanInstallmentHelper;
 
 	public LoanServiceImpl(LoanRepository loanRepository, LoanInstallmentRepository loanInstallmentRepository,
 			LoanHelper loanHelper, ApplyLoanHelper applyLoanHelper, ApproveLoanHelper approveLoanHelper,
-			DisburseLoanHelper disburseLoanHelper) {
+			DisburseLoanHelper disburseLoanHelper, LoanRepaymentHelper loanRepaymentHelper,
+			LoanInstallmentHelper loanInstallmentHelper) {
 		this.loanRepository = loanRepository;
 		this.loanInstallmentRepository = loanInstallmentRepository;
 		this.loanHelper = loanHelper;
 		this.applyLoanHelper = applyLoanHelper;
 		this.approveLoanHelper = approveLoanHelper;
 		this.disburseLoanHelper = disburseLoanHelper;
+		this.loanRepaymentHelper = loanRepaymentHelper;
+		this.loanInstallmentHelper = loanInstallmentHelper;
 
 	}
 
 	@Override
-	public ApplyLoanResponse applyLoan(ApplyLoanRequest applyLoanRequest) {
+	public ApplyLoanResponseDto applyLoan(ApplyLoanRequestDto applyLoanRequest) {
 		// TODO Auto-generated method stub
 		Customer existingCustomer = loanHelper.getExistingCustomer(applyLoanRequest.getCustomerId());
 		applyLoanHelper.validateApplyLoanRequest(existingCustomer, applyLoanRequest);
 		Loan updatedLoanDetails = applyLoanHelper.buildApplyLoanDetails(applyLoanRequest, existingCustomer);
 		loanRepository.save(updatedLoanDetails);
-		ApplyLoanResponse applyLoanResponse = applyLoanHelper.populateLoanResponse(updatedLoanDetails);
+		ApplyLoanResponseDto applyLoanResponse = applyLoanHelper.populateLoanResponse(updatedLoanDetails);
 		return applyLoanResponse;
 	}
 
 	@Override
-	public ApproveLoanResponse approveLoan(Long loanId, ApproveLoanRequest approveLoanRequest) {
+	public ApproveLoanResponseDto approveLoan(Long loanId, ApproveLoanRequestDto approveLoanRequest) {
 		// TODO Auto-generated method stub
-		ApproveLoanResponse approveLoanResponse = new ApproveLoanResponse();
-		Loan existingLoan = loanHelper.getExistingLoanByLoanId(approveLoanRequest.getLoanId());
+		ApproveLoanResponseDto approveLoanResponse = new ApproveLoanResponseDto();
+		Loan existingLoan = loanHelper.getExistingLoanByLoanId(loanId);
 		if (approveLoanHelper.validateLoanForApproval(existingLoan)) {
-			Loan updateLoanInfo = approveLoanHelper.buildApproveDetails(approveLoanRequest);
+			Loan updateLoanInfo = approveLoanHelper.buildApproveDetails(approveLoanRequest, existingLoan);
 			loanRepository.save(updateLoanInfo);
 			approveLoanResponse = approveLoanHelper.populateLoanResponse(updateLoanInfo);
 		}
@@ -74,17 +84,17 @@ public class LoanServiceImpl implements LoanService {
 	}
 
 	@Override
-	public Loan rejectLoan(Long loanId, String remarks) {
+	public Loan rejectLoan(Long loanId, RejectLoanRequestDto rejectLoanRequestDto) {
 		// TODO Auto-generated method stub
 		Loan existingLoan = loanHelper.getExistingLoanByLoanId(loanId);
-		if (null == remarks) {
+		if (null == rejectLoanRequestDto.getRemarks()) {
 			throw new InvalidLoanRequestException("Reason should not be Null or empty");
 		}
 		if (existingLoan.getLoanStatus().equals(LoanStatus.PENDING)) {
 			existingLoan.setLoanStatus(LoanStatus.REJECTED);
-			existingLoan.setRemarks(remarks);
+			existingLoan.setRemarks(rejectLoanRequestDto.getRemarks());
 			existingLoan.setLastModifiedDate(LocalDateTime.now());
-			existingLoan.setModifiedBy(LoanConstants.APPROVED_USER_NAME);
+			existingLoan.setModifiedBy(rejectLoanRequestDto.getRejectedBy());
 			loanRepository.save(existingLoan);
 		} else {
 			throw new InvalidLoanRequestException(
@@ -95,32 +105,51 @@ public class LoanServiceImpl implements LoanService {
 		return existingLoan;
 	}
 
+	@Transactional
 	@Override
-	public Loan disburseLoan(Long loanId, DisburseLoanRequest disburseLoanRequest) {
+	public Loan disburseLoan(Long loanId, DisburseLoanRequestDto disburseLoanRequest) {
 		// TODO Auto-generated method stub
 		Loan existingLoan = loanHelper.getExistingLoanByLoanId(loanId);
-		disburseLoanHelper.validateLoanDisburse(existingLoan);
 		disburseLoanHelper.validateLoanStatus(existingLoan.getLoanStatus());
-		BigDecimal intrestAmount = disburseLoanHelper.calculateTotalIntrestAmount(existingLoan.getLoanAmount(),
+		disburseLoanHelper.validateLoanDisburse(existingLoan);
+		BigDecimal totalIntrestAmount = disburseLoanHelper.calculateTotalIntrestAmount(existingLoan.getLoanAmount(),
 				existingLoan.getInterestRate(), existingLoan.getTenureMonths());
-		BigDecimal repaymentAmount = disburseLoanHelper.calculateTotalRepaymentAmount(intrestAmount,
-				existingLoan.getLoanAmount());
-		BigDecimal emiAmount = disburseLoanHelper.calculateEMI(repaymentAmount, existingLoan.getTenureMonths());
-		BigDecimal outstandingAmount = disburseLoanHelper.calculateOutstandingAmount(repaymentAmount);
-		existingLoan.setLoanStartDate(LocalDate.now());
-		existingLoan.setLoanStatus(LoanStatus.DISBURSED);
-		existingLoan.setLoanEndDate(disburseLoanHelper.calculateLoanEndDate(existingLoan.getTenureMonths()));
+		BigDecimal totalRepaymentAmount = disburseLoanHelper.calculateTotalRepaymentAmount(existingLoan.getLoanAmount(),
+				totalIntrestAmount);
+		BigDecimal emiAmount = disburseLoanHelper.calculateEMI(totalRepaymentAmount, existingLoan.getTenureMonths());
+		existingLoan.setLoanStatus(LoanStatus.ACTIVE);
 		existingLoan.setDisbursementDate(LocalDate.now());
-		existingLoan.setOutstandingAmount(outstandingAmount);
+		existingLoan.setLoanStartDate(LocalDate.now());
+		existingLoan.setLoanEndDate(disburseLoanHelper.calculateLoanEndDate(existingLoan.getTenureMonths()));
 		existingLoan.setEmiAmount(emiAmount);
+		existingLoan.setTotalInterest(totalIntrestAmount);
+		existingLoan.setTotalRepaymentAmount(totalRepaymentAmount);
+		existingLoan.setOutstandingAmount(existingLoan.getTotalRepaymentAmount());
+		existingLoan.setLastModifiedDate(LocalDateTime.now());
+		disburseLoanHelper.updateLoanInstallment(existingLoan);
+		loanRepository.save(existingLoan);
 
 		return existingLoan;
 	}
 
 	@Override
-	public Loan payEMI(LoanPaymentRequest loanPaymentRequest) {
+	public Loan payEMI(LoanRepaymentRequestDto loanPaymentRequest) {
 		// TODO Auto-generated method stub
-		return null;
+		Loan existingLoan = loanHelper.getExistingLoanByLoanNumber(loanPaymentRequest.getLoanNumber());
+
+		loanRepaymentHelper.validateLoanStatus(existingLoan.getLoanStatus());
+		loanHelper.validateCustomerStatus(existingLoan.getCustomer().getCustomerId());
+		loanRepaymentHelper.validateOutstandingAmount(existingLoan.getOutstandingAmount());
+		LoanInstallment existingLoanInstallment = loanInstallmentHelper
+				.getFirstByLoanLoanIdAndPaymentStatusOrderByInstallmentNumber(existingLoan.getLoanId(),
+						PaymentStatus.PENDING);
+		loanRepaymentHelper.validateEMIAmount(loanPaymentRequest.getAmount(), existingLoanInstallment.getEmiAmount());
+		loanRepaymentHelper.updateLoanInstallment(loanPaymentRequest, existingLoanInstallment);
+		existingLoan.setOutstandingAmount(loanRepaymentHelper.calculateOutstandingAmount(
+				existingLoan.getOutstandingAmount(), existingLoanInstallment.getEmiAmount()));
+		existingLoan.setLoanStatus(loanRepaymentHelper.getLoanStatus(existingLoan.getOutstandingAmount()));
+		loanRepository.save(existingLoan);
+		return existingLoan;
 	}
 
 	@Override
@@ -128,17 +157,16 @@ public class LoanServiceImpl implements LoanService {
 		// TODO Auto-generated method stub
 		Loan existingLoan = loanHelper.getExistingLoanByLoanNumber(loanNumber);
 
-		if(LoanStatus.ACTIVE.equals(existingLoan.getLoanStatus()))
-		{
+		// if (LoanStatus.ACTIVE.equals(existingLoan.getLoanStatus())) {
+		if (existingLoan.getOutstandingAmount().compareTo(BigDecimal.ZERO) == 0) {
 			existingLoan.setLoanEndDate(LocalDate.now());
-			existingLoan.setOutstandingAmount(BigDecimal.ZERO);
+		//	existingLoan.setOutstandingAmount(BigDecimal.ZERO);
 			existingLoan.setLastModifiedDate(LocalDateTime.now());
 			existingLoan.setModifiedBy(LoanConstants.APPROVED_USER_NAME);
 			existingLoan.setLoanStatus(LoanStatus.CLOSED);
 			existingLoan.setRemarks("Loan Repayment completed successfully");
-		}
-		else {
-			throw new InvalidLoanRequestException("Loan status is not Active. LoanNumber is "+loanNumber);
+		} else {
+			throw new InvalidLoanRequestException("Loan status is not Active. LoanNumber is " + loanNumber);
 		}
 		return existingLoan;
 	}
@@ -146,7 +174,6 @@ public class LoanServiceImpl implements LoanService {
 	@Override
 	public Loan getLoan(String loanNumber) {
 		// TODO Auto-generated method stub
-
 		Loan existingLoan = loanHelper.getExistingLoanByLoanNumber(loanNumber);
 		return existingLoan;
 	}

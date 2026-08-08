@@ -7,8 +7,9 @@ import org.springframework.stereotype.Component;
 import com.smartbank.common.service.SequenceGeneratorService;
 import com.smartbank.customer.exception.CustomerNotFoundException;
 import com.smartbank.customer.model.Customer;
+import com.smartbank.customer.model.CustomerStatus;
 import com.smartbank.customer.repository.CustomerRepository;
-import com.smartbank.loan.dto.ApproveLoanRequest;
+import com.smartbank.loan.dto.ApproveLoanRequestDto;
 import com.smartbank.loan.exception.InvalidLoanRequestException;
 import com.smartbank.loan.exception.LoanNotFoundException;
 import com.smartbank.loan.model.Loan;
@@ -67,5 +68,17 @@ public class LoanHelper {
 		return loanNummber;
 
 	}
+	
+
+	public void validateCustomerStatus(Long customerId) {
+		Customer existingCustomer = getExistingCustomer(customerId);
+		if (!CustomerStatus.ACTIVE.equals(existingCustomer.getCustomerStatus())) {
+			throw new InvalidLoanRequestException(
+					"Customer Status should be Active. Current Status is " + existingCustomer.getCustomerStatus());
+
+		}
+
+	}
+
 
 }

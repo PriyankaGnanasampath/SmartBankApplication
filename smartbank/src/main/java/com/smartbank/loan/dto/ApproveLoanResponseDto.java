@@ -1,18 +1,19 @@
 package com.smartbank.loan.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.smartbank.loan.model.LoanStatus;
 
-public class ApproveLoanResponse {
+public class ApproveLoanResponseDto {
 
 	private Long loanId;
 	private BigDecimal interestRate;
 	private String approvedBy;
 	private LoanStatus loanStatus;
 	private LocalDateTime lastModifiedDate;
-	private LocalDateTime approvalDate;
+	private LocalDate approvalDate;
 	private String modifiedBy;
 
 	public String getModifiedBy() {
@@ -63,11 +64,11 @@ public class ApproveLoanResponse {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
-	public LocalDateTime getApprovalDate() {
+	public LocalDate getApprovalDate() {
 		return approvalDate;
 	}
 
-	public void setApprovalDate(LocalDateTime approvalDate) {
+	public void setApprovalDate(LocalDate approvalDate) {
 		this.approvalDate = approvalDate;
 	}
 
@@ -78,7 +79,7 @@ public class ApproveLoanResponse {
 				+ approvalDate + ", modifiedBy=" + modifiedBy + "]";
 	}
 
-	public ApproveLoanResponse() {
+	public ApproveLoanResponseDto() {
 
 	}
 

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.smartbank.transaction.model.TransactionMode;
 
-public class LoanPaymentRequest {
+public class LoanRepaymentRequestDto {
 	private String loanNumber;
 
 	private BigDecimal amount;
@@ -50,7 +50,7 @@ public class LoanPaymentRequest {
 				+ transactionMode + ", remarks=" + remarks + "]";
 	}
 
-	public LoanPaymentRequest() {
+	public LoanRepaymentRequestDto() {
 
 	}
 }

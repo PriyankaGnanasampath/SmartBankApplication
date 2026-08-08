@@ -6,15 +6,24 @@ import java.time.LocalDateTime;
 import com.smartbank.loan.model.LoanStatus;
 import com.smartbank.loan.model.LoanType;
 
-public class ApplyLoanResponse {
+public class ApplyLoanResponseDto {
 	private Long customerId;
+	private Long loanId;
 	private String loanNumber;
 	private LoanType loanType;
 	private BigDecimal loanAmount;
 	private LoanStatus loanStatus;
 	private LocalDateTime createdDate;
 	private String createdBy;
-	private int tenureMonths;
+	private Integer tenureMonths;
+
+	public Long getLoanId() {
+		return loanId;
+	}
+
+	public void setLoanId(Long loanId) {
+		this.loanId = loanId;
+	}
 
 	public String getLoanNumber() {
 		return loanNumber;
@@ -48,11 +57,11 @@ public class ApplyLoanResponse {
 		this.createdBy = createdBy;
 	}
 
-	public int getTenureMonths() {
+	public Integer getTenureMonths() {
 		return tenureMonths;
 	}
 
-	public void setTenureMonths(int tenureMonths) {
+	public void setTenureMonths(Integer tenureMonths) {
 		this.tenureMonths = tenureMonths;
 	}
 
@@ -82,12 +91,12 @@ public class ApplyLoanResponse {
 
 	@Override
 	public String toString() {
-		return "ApplyLoanResponse [customerId=" + customerId + ", loanNumber=" + loanNumber + ", loanType=" + loanType
-				+ ", loanAmount=" + loanAmount + ", loanStatus=" + loanStatus + ", createdDate=" + createdDate
-				+ ", createdBy=" + createdBy + ", tenureMonths=" + tenureMonths + "]";
+		return "ApplyLoanResponseDto [customerId=" + customerId + ", loanId=" + loanId + ", loanNumber=" + loanNumber
+				+ ", loanType=" + loanType + ", loanAmount=" + loanAmount + ", loanStatus=" + loanStatus
+				+ ", createdDate=" + createdDate + ", createdBy=" + createdBy + ", tenureMonths=" + tenureMonths + "]";
 	}
 
-	public ApplyLoanResponse() {
+	public ApplyLoanResponseDto() {
 
 	}
 

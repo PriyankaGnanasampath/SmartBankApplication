@@ -1,6 +1,6 @@
 package com.smartbank.loan.dto;
 
-public class DisburseLoanRequest {
+public class DisburseLoanRequestDto {
 
 	private String disbursementDate;
 	
@@ -17,7 +17,7 @@ public class DisburseLoanRequest {
 		return "DisburseLoanRequest [disbursementDate=" + disbursementDate + "]";
 	}
 
-	public DisburseLoanRequest()
+	public DisburseLoanRequestDto()
 	{
 		
 	}

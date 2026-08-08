@@ -8,7 +8,7 @@ import javax.validation.constraints.Positive;
 
 import com.smartbank.loan.model.LoanType;
 
-public class ApplyLoanRequest {
+public class ApplyLoanRequestDto {
 	@NotNull(message = "CustomerId should not be Null or Empty")
 	private Long customerId;
 	@NotNull(message = "LoanType should not be Null or Empty")
@@ -17,13 +17,13 @@ public class ApplyLoanRequest {
 	@Positive(message = "LoanAmount should be Greater than Zero")
 	private BigDecimal loanAmount;
 	@Positive(message = "TenureMonth should be Greater than Zero")
-	private int tenureMonths;
+	private Integer tenureMonths;
 
-	public int getTenureMonths() {
+	public Integer getTenureMonths() {
 		return tenureMonths;
 	}
 
-	public void setTenureMonths(int tenureMonths) {
+	public void setTenureMonths(Integer tenureMonths) {
 		this.tenureMonths = tenureMonths;
 	}
 
@@ -58,7 +58,7 @@ public class ApplyLoanRequest {
 	}
 
 	
-	public ApplyLoanRequest() {
+	public ApplyLoanRequestDto() {
 
 	}
 

@@ -28,7 +28,7 @@ public class LoanInstallment {
 	@JsonIgnore
 	private Loan loan;
 
-	private int installmentNumber;
+	private Integer installmentNumber;
 
 	private LocalDate dueDate;
 
@@ -43,6 +43,44 @@ public class LoanInstallment {
 	private LocalDate paymentDate;
 	@Enumerated(EnumType.STRING)
 	private PaymentStatus paymentStatus;
+
+	private String lastModifiedBy;
+	private LocalDate lastModifiedDate;
+
+	private String createdBy;
+	private LocalDate createdDate;
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public LocalDate getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(LocalDate createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getLastModifiedBy() {
+		return lastModifiedBy;
+	}
+
+	public void setLastModifiedBy(String lastModifiedBy) {
+		this.lastModifiedBy = lastModifiedBy;
+	}
+
+	public LocalDate getLastModifiedDate() {
+		return lastModifiedDate;
+	}
+
+	public void setLastModifiedDate(LocalDate lastModifiedDate) {
+		this.lastModifiedDate = lastModifiedDate;
+	}
 
 	public Long getInstallmentId() {
 		return installmentId;
@@ -60,11 +98,11 @@ public class LoanInstallment {
 		this.loan = loan;
 	}
 
-	public int getInstallmentNumber() {
+	public Integer getInstallmentNumber() {
 		return installmentNumber;
 	}
 
-	public void setInstallmentNumber(int installmentNumber) {
+	public void setInstallmentNumber(Integer installmentNumber) {
 		this.installmentNumber = installmentNumber;
 	}
 
@@ -129,7 +167,8 @@ public class LoanInstallment {
 		return "LoanInstallment [installmentId=" + installmentId + ", installmentNumber=" + installmentNumber
 				+ ", dueDate=" + dueDate + ", emiAmount=" + emiAmount + ", principalAmount=" + principalAmount
 				+ ", interestAmount=" + interestAmount + ", paidAmount=" + paidAmount + ", paymentDate=" + paymentDate
-				+ ", paymentStatus=" + paymentStatus + "]";
+				+ ", paymentStatus=" + paymentStatus + ", lastModifiedBy=" + lastModifiedBy + ", lastModifiedDate="
+				+ lastModifiedDate + ", createdBy=" + createdBy + ", createdDate=" + createdDate + "]";
 	}
 
 	public LoanInstallment() {

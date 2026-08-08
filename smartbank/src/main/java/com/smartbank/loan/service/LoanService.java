@@ -4,25 +4,26 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.smartbank.loan.dto.ApplyLoanRequest;
-import com.smartbank.loan.dto.ApplyLoanResponse;
-import com.smartbank.loan.dto.ApproveLoanRequest;
-import com.smartbank.loan.dto.ApproveLoanResponse;
-import com.smartbank.loan.dto.DisburseLoanRequest;
-import com.smartbank.loan.dto.LoanPaymentRequest;
+import com.smartbank.loan.dto.ApplyLoanRequestDto;
+import com.smartbank.loan.dto.ApplyLoanResponseDto;
+import com.smartbank.loan.dto.ApproveLoanRequestDto;
+import com.smartbank.loan.dto.ApproveLoanResponseDto;
+import com.smartbank.loan.dto.DisburseLoanRequestDto;
+import com.smartbank.loan.dto.LoanRepaymentRequestDto;
+import com.smartbank.loan.dto.RejectLoanRequestDto;
 import com.smartbank.loan.model.Loan;
 
 @Service
 public interface LoanService {
-	public ApplyLoanResponse applyLoan(ApplyLoanRequest applyLoanRequest);
+	public ApplyLoanResponseDto applyLoan(ApplyLoanRequestDto applyLoanRequest);
 
-	public ApproveLoanResponse approveLoan(Long loanId, ApproveLoanRequest approveLoanRequest);
+	public ApproveLoanResponseDto approveLoan(Long loanId, ApproveLoanRequestDto approveLoanRequest);
 
-	public Loan rejectLoan(Long loanId, String remarks);
+	public Loan rejectLoan(Long loanId, RejectLoanRequestDto rejectLoanRequestDto);
 
-	public Loan disburseLoan(Long loanId, DisburseLoanRequest disburseLoanRequest );
+	public Loan disburseLoan(Long loanId, DisburseLoanRequestDto disburseLoanRequest );
 
-	public Loan payEMI(LoanPaymentRequest loanPaymentRequest);
+	public Loan payEMI(LoanRepaymentRequestDto loanPaymentRequest);
 
 	public Loan closeLoan(String loanNumber);
 

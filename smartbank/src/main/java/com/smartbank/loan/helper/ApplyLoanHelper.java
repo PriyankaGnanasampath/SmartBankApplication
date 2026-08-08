@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import com.smartbank.customer.model.Customer;
 import com.smartbank.customer.model.CustomerStatus;
 import com.smartbank.loan.common.LoanConstants;
-import com.smartbank.loan.dto.ApplyLoanRequest;
-import com.smartbank.loan.dto.ApplyLoanResponse;
+import com.smartbank.loan.dto.ApplyLoanRequestDto;
+import com.smartbank.loan.dto.ApplyLoanResponseDto;
 import com.smartbank.loan.exception.InvalidLoanRequestException;
 import com.smartbank.loan.model.Loan;
 import com.smartbank.loan.model.LoanStatus;
@@ -24,22 +24,22 @@ public class ApplyLoanHelper {
 		this.loanHelper = loanHelper;
 	}
 
-	public void validateApplyLoanRequest(Customer existingCustomer, ApplyLoanRequest applyLoanRequest) {
+	public void validateApplyLoanRequest(Customer existingCustomer, ApplyLoanRequestDto applyLoanRequest) {
 		if (!CustomerStatus.ACTIVE.equals(existingCustomer.getCustomerStatus())) {
 			throw new InvalidLoanRequestException("Customer is not an Active Customer.Given Customertatus is`"
 					+ existingCustomer.getCustomerStatus());
 		}
 		Optional<List<Loan>> existingLoans = Optional
 				.of(loanHelper.getExistingLoansForCustomer(applyLoanRequest.getCustomerId()));
-		if (existingLoans.isPresent()) {
+		if (existingLoans.isPresent() && existingLoans.get().size() > 0) {
 			maximumLoanLimit(existingLoans);
 			duplicateLoanRequestCheck(existingLoans, applyLoanRequest.getLoanType());
 		}
 		validateLoanTenure(applyLoanRequest);
 	}
 
-	public ApplyLoanResponse populateLoanResponse(Loan updatedLoanDetails) {
-		ApplyLoanResponse applyLoanResponse = new ApplyLoanResponse();
+	public ApplyLoanResponseDto populateLoanResponse(Loan updatedLoanDetails) {
+		ApplyLoanResponseDto applyLoanResponse = new ApplyLoanResponseDto();
 		applyLoanResponse.setCreatedBy(updatedLoanDetails.getCreatedBy());
 		applyLoanResponse.setCreatedDate(LocalDateTime.now());
 		applyLoanResponse.setCustomerId(updatedLoanDetails.getCustomer().getCustomerId());
@@ -47,6 +47,8 @@ public class ApplyLoanHelper {
 		applyLoanResponse.setLoanStatus(updatedLoanDetails.getLoanStatus());
 		applyLoanResponse.setLoanNumber(updatedLoanDetails.getLoanNumber());
 		applyLoanResponse.setTenureMonths(updatedLoanDetails.getTenureMonths());
+		applyLoanResponse.setLoanType(updatedLoanDetails.getLoanType());
+		applyLoanResponse.setLoanId(updatedLoanDetails.getLoanId());
 		return applyLoanResponse;
 
 	}
@@ -78,7 +80,7 @@ public class ApplyLoanHelper {
 
 	}
 
-	public void validateLoanTenure(ApplyLoanRequest applyLoanRequest) {
+	public void validateLoanTenure(ApplyLoanRequestDto applyLoanRequest) {
 		switch (applyLoanRequest.getLoanType()) {
 		case HOME:
 			validateTenureMonthLimits(applyLoanRequest.getTenureMonths(), LoanConstants.MIN_HOME_LOAN_TENURE_MONTHS,
@@ -106,7 +108,7 @@ public class ApplyLoanHelper {
 		}
 	}
 
-	public Loan buildApplyLoanDetails(ApplyLoanRequest applyLoanRequest, Customer existingCustomer) {
+	public Loan buildApplyLoanDetails(ApplyLoanRequestDto applyLoanRequest, Customer existingCustomer) {
 		Loan loan = new Loan();
 		loan.setCreatedBy(LoanConstants.CREATED_USER_NAME);
 		loan.setCreatedDate(LocalDateTime.now());
